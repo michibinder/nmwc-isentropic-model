@@ -367,7 +367,7 @@ def plot_figure(varnames, var, timestep, plot_cbar):
     plt.contour(var.xp, var.zp[timestep, :, :],
                 var.theta, clev, colors='grey', linewidths=1)
 
-    # Add topography
+    # Add topography 
     plt.plot(var.xp[0, :], var.topo, '-k')
     plt.ylim(args.zlim)
 

@@ -16,15 +16,16 @@ def maketopo(topo,nxb):
 
     x = np.arange(0,nxb,dtype='float32')
     
-    ######
-    # x0 = (nxb - 1)/2. + 1
-    # x = (x+1 - x0)*dx
-    # toponf = topomx*np.exp(-(x/float(topowd))**2)
-    ######
     
-    x0 = (nxb - 1)/2. + 1
-    x = (x+1 - x0)*dx
-    toponf = topomx*np.exp(-(x/float(topowd))**2)
+    if two_mtns:
+        x0 = (nxb - 1)/4. + 1
+        x = (x+1 - x0)*dx
+        toponf = topomx*np.exp(-(x/float(topowd))**2)
+    else:
+        x0 = (nxb - 1)/2. + 1
+        x = (x+1 - x0)*dx
+        toponf = topomx*np.exp(-(x/float(topowd))**2)
+        
 
     topo[1:-1,0] = toponf[1:-1] + 0.25*(toponf[0:-2] - 2.*toponf[1:-1] +
                                         toponf[2:])

@@ -6,7 +6,7 @@
 
 import numpy as np
 import sys
-
+from namelist import two_mtns
 
 class dotdict(dict):
 
@@ -61,9 +61,15 @@ def readsim(filename, varnames):
     # Create Topography
     var.topo = np.zeros(var.nx)
     x = np.arange(var.nx, dtype='float32')
-    x0 = (var.nx - 1) / 2. + 1
-    x = (x + 1 - x0) * var.dx
-    toponf = var.topomx * np.exp(-(x / float(var.topowd)) ** 2)
+    
+    if two_mtns:
+        x0 = (var.nx - 1) / 4. + 1
+        x = (x + 1 - x0) * var.dx
+        toponf = var.topomx * np.exp(-(x / float(var.topowd)) ** 2)
+    else:
+        x0 = (var.nx - 1) / 2. + 1
+        x = (x + 1 - x0) * var.dx
+        toponf = var.topomx * np.exp(-(x / float(var.topowd)) ** 2)
     var.topo[1:-1] = toponf[1:-1] + 0.25 * (toponf[0:-2] - 2. * toponf[1:-1] +
                                             toponf[2:])
 

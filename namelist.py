@@ -8,9 +8,15 @@ and all subfunctions.
 # --------------------- USER NAMELIST --------------------
 # --------------------------------------------------------
 
+#
+# New VARS
+#-------------------------------------------------
+two_mtns = 1
+#-------------------------------------------------
+
 # Output control
 #-------------------------------------------------
-out_fname   = 'output_wave'      # file name of output
+out_fname   = 'outputs/output_wave'      # file name of output
 iout        = 360               # write every iout-th time-step into the output file
 iiniout     = 1                 # write initial field (0 = no, 1 = yes)
 
