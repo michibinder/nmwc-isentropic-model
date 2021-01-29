@@ -10,7 +10,7 @@ and all subfunctions.
 
 # Output control
 #-------------------------------------------------
-out_fname   = 'output_ex5'      # file name of output
+out_fname   = 'output_wave'      # file name of output
 iout        = 360               # write every iout-th time-step into the output file
 iiniout     = 1                 # write initial field (0 = no, 1 = yes)
 
@@ -23,19 +23,19 @@ thl     = 60.                   # domain depth  [K]
 nz      = 60                    # vertical resolution
 dt      = 10                    # time step [s]
 diff    = 0.02                  # (horizontal) diffusion coefficient
-time    = 6*60*60              # integration time [s]
+time    = 4*60*60              # integration time [s]
 
 # Topography
 #-------------------------------------------------
-topomx  = 1000                  # mountain height [m]
-topowd  = 50000                 # mountain half width [m]
+topomx  = 1500                  # mountain height [m]
+topowd  = 70000                 # mountain half width [m]
 topotim = 1800                  # mountain growth time [s]
 
 # Initial atmosphere
 #-------------------------------------------------
-u00     = 15.                   # initial velocity [m/s]
-bv00    = 0.01                  # Brunt-Vaisalla frequency [1/s]
-th00    = 280.                  # potential temperature at surface
+u00     = 10.                   # initial velocity [m/s]
+bv00    = 0.009                  # Brunt-Vaisalla frequency [1/s]
+th00    = 260.                  # potential temperature at surface
 
 ishear  = 0                     # wind shear simulation (0 = no shear, 1 = shear)
 k_shl   = 5                     # bottom level of wind shear layer (ishear = 1)

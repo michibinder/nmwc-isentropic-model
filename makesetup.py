@@ -15,7 +15,13 @@ def maketopo(topo,nxb):
         print('Topography ...\n')
 
     x = np.arange(0,nxb,dtype='float32')
-
+    
+    ######
+    # x0 = (nxb - 1)/2. + 1
+    # x = (x+1 - x0)*dx
+    # toponf = topomx*np.exp(-(x/float(topowd))**2)
+    ######
+    
     x0 = (nxb - 1)/2. + 1
     x = (x+1 - x0)*dx
     toponf = topomx*np.exp(-(x/float(topowd))**2)
@@ -116,21 +122,26 @@ def makeprofile(sold,snow,uold,unow,mtg,mtgnew,qvold=0,qvnow=0,
         # *** define new indices and create the profile ***
         # *** for rh0; then use function rrmixv1 to compute qv0 ***
         rh_max = 0.98
-        k_c = 11
-        k_w = 10
+        k_c = 3-1 # -> with k from 2 to 20
+        k_w = 2 # 10
         
-        #### k_c = 12?? ####
+        #### k_c = 12 ####
         # ks = np.linspace(k_c-k_w, k_c+k_w, 2*k_w+1, dtype=int) # k=12 -> rh0[12]=0.98 rh0[2]= 0 :)
         # ks = np.linspace(k_c-k_w+1, k_c+k_w-1, 2*k_w-1, dtype=int)
         # ks = np.linspace(k_c-k_w, k_c+k_w-2, 2*k_w-1, dtype=int)
         ####
         
         k = np.linspace(k_c-k_w + 1, k_c+k_w-1, 2*k_w-1, dtype=int) # kc = 11
+        # k = np.linspace(k_c-k_w, k_c+k_w-2, 2*k_w-1, dtype=int) # kc = 11
         # k = np.arange(k_c - k_w + 1, k_c + k_w, 1) # kc = 11     
         
+        k2 = np.arange(9,14,1)
         rh0[k] = rh_max * np.cos(np.abs(k-k_c)/k_w * np.pi/2)**2
+        rh0[k2] = rh_max
         qv0[k] = rrmixv1(0.5*(prs0[k]+prs0[k+1])/100,
                          0.5*(th0[k]/cp*exn0[k]+th0[k+1]/cp*exn0[k+1]),rh0[k],2)
+        qv0[k2] = rrmixv1(0.5*(prs0[k2]+prs0[k2+1])/100,
+                         0.5*(th0[k2]/cp*exn0[k2]+th0[k2+1]/cp*exn0[k2+1]),rh0[k2],2)
 
 
         # *** Exercise 4.1 Initial Moisture profile ***
