@@ -6,7 +6,8 @@
 
 import numpy as np
 import sys
-from namelist import two_mtns
+from namelist import mtn_topo, h_ratio, w_ratio, leeHill_rel
+
 
 class dotdict(dict):
 
@@ -62,14 +63,47 @@ def readsim(filename, varnames):
     var.topo = np.zeros(var.nx)
     x = np.arange(var.nx, dtype='float32')
     
-    if two_mtns:
-        x0 = (var.nx - 1) / 4. + 1
-        x = (x + 1 - x0) * var.dx
-        toponf = var.topomx * np.exp(-(x / float(var.topowd)) ** 2)
+    if mtn_topo==1: # lee mtn
+        x0 = (var.nx - 1)/2. + 1
+        x1 = (var.nx - 1)*leeHill_rel + 1
+        x_lee = (x+1 - x1)*var.dx
+        x = (x+1 - x0)*var.dx
+        
+        toponf_main = var.topomx*np.exp(-(x/float(var.topowd))**2)
+        toponf_lee = var.topomx*h_ratio*np.exp(-(x_lee/float(var.topowd*w_ratio))**2)
+        toponf = np.where(toponf_main>toponf_lee,toponf_main,toponf_lee)
+
+    elif mtn_topo==2: # downstream mtn
+        x0 = (var.nx - 1)/2. + 1
+        x1 = (var.nx - 1)*(leeHill_rel+5/32) + 1
+        x_lee = (x+1 - x1)*var.dx
+        x = (x+1 - x0)*var.dx
+        
+        toponf_main = var.topomx*np.exp(-(x/float(var.topowd))**2)
+        toponf_lee = var.topomx*h_ratio*np.exp(-(x_lee/float(var.topowd*w_ratio))**2)
+        toponf = np.where(toponf_main>toponf_lee,toponf_main,toponf_lee)
+    
+    elif mtn_topo==3: # Witch of Agnesi mtn
+        x0 = (var.nx - 1)/2. + 1
+        x = (x+1 - x0)*var.dx
+        
+        toponf = var.topomx * var.topowd**2 / (x**2 + float(var.topowd)**2)
+        
+    elif mtn_topo==4: # Witch of Agnesi mtn with lee hill
+        x0 = (var.nx - 1)/2. + 1
+        x1 = (var.nx - 1)*leeHill_rel + 1
+        x_lee = (x+1 - x1)*var.dx
+        x = (x+1 - x0)*var.dx
+        
+        toponf_main = var.topomx * var.topowd**2 / (x**2 + float(var.topowd)**2)
+        toponf_lee = var.topomx*h_ratio * float(var.topowd*w_ratio)**2 / (x_lee**2 + float(var.topowd*w_ratio)**2)
+        toponf = np.where(toponf_main>toponf_lee,toponf_main,toponf_lee)
+        
     else:
         x0 = (var.nx - 1) / 2. + 1
         x = (x + 1 - x0) * var.dx
         toponf = var.topomx * np.exp(-(x / float(var.topowd)) ** 2)
+        
     var.topo[1:-1] = toponf[1:-1] + 0.25 * (toponf[0:-2] - 2. * toponf[1:-1] +
                                             toponf[2:])
 

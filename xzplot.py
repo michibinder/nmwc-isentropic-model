@@ -226,6 +226,8 @@ def plot_dict(args, var, varnames):
     if v in varnames:
         vMinInt = args.vlim[0]
         vMaxInt = args.vlim[1]
+        vMinInt = 0
+        vMaxInt = 40
         scale = 1
         
         # If no limits are given, they will be set automatically according
@@ -380,7 +382,7 @@ def plot_figure(varnames, var, timestep, plot_cbar):
                           pd[varname]['clev'][-1] + pd[varname]['ci'],
                           pd[varname]['ci'])
      
-        vmin = valRange[0] 
+        vmin = valRange[0]
         vmax = valRange[-1] 
         if varname == 'horizontal_velocity': 
             valRange = np.arange(pd[varname]['clev'][0] - 0.5*pd[varname]['ci'],
@@ -391,7 +393,6 @@ def plot_figure(varnames, var, timestep, plot_cbar):
             maxDist = max(distUpMid, distMidDown)
             vmin = var.u00 - maxDist
             vmax = var.u00 + maxDist
-       
         # Plot 
         cs = ax.contourf(var.xp, var.zp[timestep, :, :], pd[varname]['scale'] *
                          var[varname][timestep, :, :],
@@ -402,9 +403,10 @@ def plot_figure(varnames, var, timestep, plot_cbar):
        
         # Add a colorbar if needed
         if plot_cbar:
-            cb = plt.colorbar(cs, ticks=ticks, spacing='uniform')
+            asd=1
+            # cb = plt.colorbar(cs, ticks=ticks, spacing='uniform', orientation='horizontal') # location="top")
+            # cb = plt.colorbar(cs, ticks=ticks, spacing='uniform')
             # cb = plt.colorbar(cs, spacing='uniform')
-        
         if varname == 'specific_rain_water_content':
             tpi = 0.1
             vMinInt = args.totpreclim[0]
@@ -420,7 +422,8 @@ def plot_figure(varnames, var, timestep, plot_cbar):
             ax2.cla()
             ax2.set_ylabel('Acum. Rain [mm]')
 #             ax2.set_ylim(args.totpreclim)
-            ax2.set_ylim(vMinInt, vMaxInt)
+            # ax2.set_ylim(vMinInt, vMaxInt)
+            ax2.set_ylim(0, 2.5)
             cs = ax2.plot(var.xp[0, :],
                           var.accumulated_precipitation[timestep, :], 'b-')
 #                           var.accumulated_precipitation[timestep, :], 'b-')
@@ -516,6 +519,7 @@ if __name__ == '__main__':
         plt.show()
 
     if anim == False:
+        fig.tight_layout()
         with plt.rc_context({'savefig.format': 'pdf'}):
             plt.savefig(args.figname)
         #else:

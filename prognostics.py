@@ -52,7 +52,7 @@ def prog_velocity(uold,unow,mtg,dtdx,dthetadt=None):
     if idthdt:
         ii,kk = np.ix_(i,k)
         unew[ii,kk] = unew[ii,kk]- dt/dth * (unow[ii,kk+1]-unow[ii,kk-1]) * (dthetadt[ii,kk+1]+dthetadt[ii-1,kk+1] + dthetadt[ii,kk]+dthetadt[ii-1,kk]) / 4 
-        
+    
     # *** Exercise 2.1/5.2 velocity ***
     return unew
 

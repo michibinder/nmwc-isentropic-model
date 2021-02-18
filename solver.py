@@ -644,6 +644,7 @@ elif imicrophys==2:
 t1 = tm()
 
 if itime == 1:
+    print('dx: {}'.format(dx))
     print('Total elapsed computation time: %g s\n' %(t1-t0))
 
 # END OF SOLVER.PY

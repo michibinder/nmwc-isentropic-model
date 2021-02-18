@@ -17,18 +17,51 @@ def maketopo(topo,nxb):
     x = np.arange(0,nxb,dtype='float32')
     
     
-    if two_mtns:
-        x0 = (nxb - 1)/4. + 1
+    if mtn_topo==1: # lee mtn
+        x0 = (nxb - 1)/2. + 1
+        x1 = (nxb - 1)*leeHill_rel + 1
+        x_lee = (x+1 - x1)*dx
         x = (x+1 - x0)*dx
-        toponf = topomx*np.exp(-(x/float(topowd))**2)
+        
+        toponf_main = topomx*np.exp(-(x/float(topowd))**2)
+        toponf_lee = topomx*h_ratio*np.exp(-(x_lee/float(topowd*w_ratio))**2)
+        toponf = np.where(toponf_main>toponf_lee,toponf_main,toponf_lee)
+        
+    elif mtn_topo==2: # downstream mtn
+        x0 = (nxb - 1)/2. + 1
+        x1 = (nxb - 1)*2*(leeHill_rel+5/32) + 1
+        x_lee = (x+1 - x1)*dx
+        x = (x+1 - x0)*dx
+        
+        toponf_main = topomx*np.exp(-(x/float(topowd))**2)
+        toponf_lee = topomx*h_ratio*np.exp(-(x_lee/float(topowd*w_ratio))**2)
+        toponf = np.where(toponf_main>toponf_lee,toponf_main,toponf_lee)
+        
+    elif mtn_topo==3: # Witch of Agnesi mtn
+        x0 = (nxb - 1)/2. + 1
+        x = (x+1 - x0)*dx
+        
+        toponf = topomx * topowd**2 / (x**2 + float(topowd)**2)
+        
+    elif mtn_topo==4: # Witch of Agnesi mtn with lee hill
+        x0 = (nxb - 1)/2. + 1
+        x1 = (nxb - 1)*leeHill_rel + 1
+        x_lee = (x+1 - x1)*dx
+        x = (x+1 - x0)*dx
+        
+        toponf_main = topomx * topowd**2 / (x**2 + float(topowd)**2)
+        toponf_lee = topomx*h_ratio * float(topowd*w_ratio)**2 / (x_lee**2 + float(topowd*w_ratio)**2)
+        toponf = np.where(toponf_main>toponf_lee,toponf_main,toponf_lee)
+        
     else:
         x0 = (nxb - 1)/2. + 1
         x = (x+1 - x0)*dx
         toponf = topomx*np.exp(-(x/float(topowd))**2)
-        
-
+    
     topo[1:-1,0] = toponf[1:-1] + 0.25*(toponf[0:-2] - 2.*toponf[1:-1] +
-                                        toponf[2:])
+                                        toponf[2:]) 
+
+    
     return topo
 
 
@@ -108,6 +141,10 @@ def makeprofile(sold,snow,uold,unow,mtg,mtgnew,qvold=0,qvnow=0,
         u0[k_shl:k_sht+1] = np.linspace(u00_sh, u00, (k_sht-k_shl)+1)
         # u0[k_shl:k_sht] = np.linspace(u00_sh, u00, k_sht-k_shl)
         # *** Exercise 3.3 Downslope windstorm ***
+        
+        if surf_friction==1:
+            u0[0:3] = np.linspace(0, u00_sh, 4)
+            
     else:
         if idbg == 1:
             print('Using uniform wind profile ...\n')
@@ -123,28 +160,45 @@ def makeprofile(sold,snow,uold,unow,mtg,mtgnew,qvold=0,qvnow=0,
         # *** define new indices and create the profile ***
         # *** for rh0; then use function rrmixv1 to compute qv0 ***
         rh_max = 0.98
-        k_c = 3-1 # -> with k from 2 to 20
-        k_w = 2 # 10
+        k_w = 3 # 10
         
-        #### k_c = 12 ####
-        # ks = np.linspace(k_c-k_w, k_c+k_w, 2*k_w+1, dtype=int) # k=12 -> rh0[12]=0.98 rh0[2]= 0 :)
-        # ks = np.linspace(k_c-k_w+1, k_c+k_w-1, 2*k_w-1, dtype=int)
-        # ks = np.linspace(k_c-k_w, k_c+k_w-2, 2*k_w-1, dtype=int)
-        ####
+        if moist_setup==0 or moist_setup==2:
+            k_c = h_moistLayer_up-1 # -> 11 (12-1) with k from 2 to 20
+                
+            k = np.linspace(k_c-k_w + 1, k_c+k_w-1, 2*k_w-1, dtype=int) # kc = 11
+            # k = np.arange(k_c - k_w + 1, k_c + k_w, 1) # kc = 11     
+            
+            rh0[k] = rh_max * np.cos(np.abs(k-k_c)/k_w * np.pi/2)**2  
+            qv0[k] = rrmixv1(0.5*(prs0[k]+prs0[k+1])/100,
+                             0.5*(th0[k]/cp*exn0[k]+th0[k+1]/cp*exn0[k+1]),rh0[k],2)
+            
+            if moist_setup==2:
+                k_c_2 = h_moistLayer_low-1
+                k_w_2 = 5
+                k2 = np.linspace(k_c_2-k_w_2 + 1, k_c_2+k_w_2-1, 2*k_w_2-1, dtype=int)
+                
+                rh0[k2] = rh_max * np.cos(np.abs(k2-k_c_2)/k_w_2 * np.pi/2)**2
+                qv0[k2] = rrmixv1(0.5*(prs0[k2]+prs0[k2+1])/100,
+                             0.5*(th0[k2]/cp*exn0[k2]+th0[k2+1]/cp*exn0[k2+1]),rh0[k2],2)
         
-        k = np.linspace(k_c-k_w + 1, k_c+k_w-1, 2*k_w-1, dtype=int) # kc = 11
-        # k = np.linspace(k_c-k_w, k_c+k_w-2, 2*k_w-1, dtype=int) # kc = 11
-        # k = np.arange(k_c - k_w + 1, k_c + k_w, 1) # kc = 11     
+        elif moist_setup==3:
+            k_c = h_moistLayer_low-1
+            k = np.linspace(k_c-k_w + 1, k_c+k_w-1, 2*k_w-1, dtype=int)
+            rh0[k] = rh_max * 4/5
+            qv0[k] = rrmixv1(0.5*(prs0[k]+prs0[k+1])/100,
+                             0.5*(th0[k]/cp*exn0[k]+th0[k+1]/cp*exn0[k+1]),rh0[k],2)
+            
+        else: # moist_setup==1:
+            k_c = h_moistLayer_low-1
+            k = np.linspace(k_c-k_w + 1, k_c+k_w-1, 2*k_w-1, dtype=int) # kc = 11     
+            
+            rh0[k] = rh_max * np.cos(np.abs(k-k_c)/k_w * np.pi/2)**2
+            qv0[k] = rrmixv1(0.5*(prs0[k]+prs0[k+1])/100,
+                             0.5*(th0[k]/cp*exn0[k]+th0[k+1]/cp*exn0[k+1]),rh0[k],2)
         
-        k2 = np.arange(9,14,1)
-        rh0[k] = rh_max * np.cos(np.abs(k-k_c)/k_w * np.pi/2)**2
-        rh0[k2] = rh_max
-        qv0[k] = rrmixv1(0.5*(prs0[k]+prs0[k+1])/100,
-                         0.5*(th0[k]/cp*exn0[k]+th0[k+1]/cp*exn0[k+1]),rh0[k],2)
-        qv0[k2] = rrmixv1(0.5*(prs0[k2]+prs0[k2+1])/100,
-                         0.5*(th0[k2]/cp*exn0[k2]+th0[k2+1]/cp*exn0[k2+1]),rh0[k2],2)
-
-
+        
+        
+            
         # *** Exercise 4.1 Initial Moisture profile ***
 
         # Upstream profile for number densities (unstaggered)
